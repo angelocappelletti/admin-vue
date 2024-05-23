@@ -219,7 +219,6 @@ const scrollToBottom = () => {
 				<span class="text-lg">😺</span>
 				<p class="flex items-center gap-2">
 					<span class="loading loading-dots loading-xs shrink-0" />
-					Cheshire Cat is thinking...
 				</p>
 			</div>
 		</div>
