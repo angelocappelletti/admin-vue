@@ -86,21 +86,22 @@ const fileUrl = computed(() => {
 <template>
 	<div class="chat gap-x-3" :class="[sender === 'bot' ? 'chat-start' : 'chat-end']">
 		<div class="chat-image text-lg">
-			{{ sender === 'bot' ? '😺' : '🙂' }}
+			<img v-if="sender === 'bot'" src="@assets/gp-logo.png" class="size-6 cursor-pointer dark:brightness-0 dark:invert md:block" />
+			<img v-if="sender !== 'bot'" src="@assets/user-avatar.png" class="size-6 cursor-pointer dark:brightness-0 dark:invert md:block" />
 		</div>
 		<div class="chat-header">
-			{{ sender === 'bot' ? 'Cheshire Cat' : 'You' }}
+			{{ sender === 'bot' ? 'AI' : 'Tu' }}
 			<time class="text-xs opacity-50">{{ timestamp }}</time>
 		</div>
 		<div class="chat-bubble flex min-h-fit items-center break-words rounded-lg bg-base-100 p-0 text-neutral shadow-md">
 			<div class="p-2 md:p-3">
 				<p v-if="text" class="text-ellipsis" v-html="renderedText" />
-				<p v-else class="text-ellipsis font-medium italic opacity-75">Cheshire Cat is thinking...</p>
+				<p v-else class="text-ellipsis font-medium italic opacity-75">L'AI sta pensando...</p>
 				<div v-if="isLengthy && !showReadMore" class="flex justify-end font-bold">
-					<a @click="showReadMore = true">Read more</a>
+					<a @click="showReadMore = true">Leggi di più</a>
 				</div>
 				<div v-else-if="isLengthy && showReadMore" class="flex justify-end font-bold">
-					<a @click="showReadMore = false">Hide content</a>
+					<a @click="showReadMore = false">Nascondi</a>
 				</div>
 				<img v-if="file?.type.startsWith('image/')" :src="fileUrl" width="512" height="512" class="rounded-lg shadow-xl" />
 				<audio

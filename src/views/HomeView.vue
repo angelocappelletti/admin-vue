@@ -162,10 +162,10 @@ const regenerateResponse = (msgId: string) => {
 }
 
 const generatePlaceholder = (isLoading: boolean, isRecording: boolean, error?: string) => {
-	if (error) return 'Well, well, well, looks like something has gone amiss'
-	if (isLoading) return 'The enigmatic Cheshire cat is pondering...'
-	if (isRecording) return 'The curious Cheshire cat is all ears...'
-	return 'Ask the Cheshire Cat...'
+	if (error) return 'Qualcosa è andato storto'
+	if (isLoading) return "L'AI sta elaborando la risposta..."
+	if (isRecording) return "L'AI sta ascoltando..."
+	return "Fai la tua richiesta all'AI..."
 }
 
 const wipeHistory = async () => {
@@ -246,7 +246,7 @@ const scrollToBottom = () => {
 								<span class="rounded-lg p-1 text-primary">
 									<ph-export-bold class="size-5" />
 								</span>
-								<span class="grow">Export conversation</span>
+								<span class="grow">Esporta la conversazione</span>
 							</button>
 						</li>
 						<li>
@@ -257,7 +257,7 @@ const scrollToBottom = () => {
 								<span class="rounded-lg p-1 text-success">
 									<ph-brain-fill class="size-5" />
 								</span>
-								<span class="grow">Upload memories</span>
+								<span class="grow">Carica memoria</span>
 							</button>
 						</li>
 						<li>
@@ -268,7 +268,7 @@ const scrollToBottom = () => {
 								<span class="rounded-lg p-1 text-info">
 									<heroicons-globe-alt class="size-5" />
 								</span>
-								<span class="grow">Upload url</span>
+								<span class="grow">Carica url</span>
 							</button>
 						</li>
 						<li>
@@ -287,7 +287,7 @@ const scrollToBottom = () => {
 								<span class="rounded-lg p-1 text-error">
 									<heroicons-trash-solid class="size-5" />
 								</span>
-								<span class="grow">Clear conversation</span>
+								<span class="grow">Cancella la conversazione</span>
 							</button>
 						</li>
 					</ul>
@@ -329,10 +329,10 @@ const scrollToBottom = () => {
 		<Teleport to="#modal">
 			<ModalBox ref="boxUploadURL">
 				<div class="flex flex-col items-center justify-center gap-4 text-neutral">
-					<h3 class="text-lg font-bold">Insert URL</h3>
-					<p>Write down the URL you want the Cat to digest :</p>
+					<h3 class="text-lg font-bold">Inserisci l'URL</h3>
+					<p>Inserisci qui l'url della pagina web che verrà elaborata dall'AI :</p>
 					<InputBox v-model.trim="insertedURL" placeholder="Enter url..." />
-					<button class="btn btn-primary btn-sm" @click="dispatchWebsite">Send</button>
+					<button class="btn btn-primary btn-sm" @click="dispatchWebsite">Invia</button>
 				</div>
 			</ModalBox>
 		</Teleport>

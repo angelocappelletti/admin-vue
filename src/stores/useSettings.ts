@@ -24,7 +24,7 @@ export const useSettings = defineStore('settings', () => {
 
 	const pluginsFilters = useLocalStorage<Filter>('pluginsFilters', {
 		presence: {
-			current: 'both',
+			current: 'installed',
 			values: ['both', 'installed', 'registry'],
 		},
 		visibility: {
