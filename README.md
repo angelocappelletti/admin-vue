@@ -17,8 +17,6 @@
   <img alt="GitHub Pull Requests" src="https://img.shields.io/github/issues-pr/cheshire-cat-ai/admin-vue?logo=github&style=flat-square">
 </a>
 
-
-
 # Cheshire Cat Admin UI 🐱
 
 This is the source code to build the admin client for the Cheshire Cat AI.
