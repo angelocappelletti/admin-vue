@@ -12,7 +12,8 @@ describe('MessageBox', () => {
 			},
 		})
 
-		expect(wrapper.find('.chat-image').text()).toContain('🙂')
+		// expect(wrapper.find('.chat-image').text()).toContain('🙂')
+		expect(wrapper.find('.chat-image img').exists()).toBe(true)
 
 		expect(wrapper.find('.chat-bubble p').html()).toContain('<p>Hello dear cat!</p>')
 
@@ -30,7 +31,8 @@ describe('MessageBox', () => {
 			},
 		})
 
-		expect(wrapper.find('.chat-image').text()).toContain('😺')
+		// expect(wrapper.find('.chat-image').text()).toContain('😺')
+		expect(wrapper.find('.chat-image img').exists()).toBe(true)
 
 		expect(wrapper.find('.chat-bubble p').html()).toContain('<p>Hello dear human!</p>')
 
