@@ -24,9 +24,9 @@
 						<MenuItem as="li">
 							<RouterLink to="/"> <heroicons-home-20-solid class="size-4" /> Home </RouterLink>
 						</MenuItem>
-						<!-- <MenuItem as="li">
+						<MenuItem as="li">
 							<RouterLink :key="$route.fullPath" :to="{ path: '/memory' }"> <ph-brain-fill class="size-4" /> Memory </RouterLink>
-						</MenuItem> -->
+						</MenuItem>
 						<MenuItem as="li">
 							<RouterLink :key="$route.fullPath" :to="{ path: '/plugins' }"> <ph-plug-fill class="size-4" /> Plugins </RouterLink>
 						</MenuItem>
