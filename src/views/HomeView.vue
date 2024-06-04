@@ -279,7 +279,7 @@ const scrollToBottom = () => {
 								<span class="rounded-lg p-1 text-warning">
 									<heroicons-document-text-solid class="size-5" />
 								</span>
-								<span class="grow">Upload file</span>
+								<span class="grow">Carica file</span>
 							</button>
 						</li>
 						<li>
