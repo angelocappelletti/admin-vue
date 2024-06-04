@@ -1,22 +1,3 @@
-<a href="https://discord.gg/bHX5sNFCYU">
-  <img alt="Discord Server" src="https://img.shields.io/discord/1092359754917089350?logo=discord&style=flat-square">
-</a>
-<a href="https://github.com/cheshire-cat-ai/admin-vue/stargazers">
-  <img alt="GitHub Stars" src="https://img.shields.io/github/stars/cheshire-cat-ai/admin-vue?logo=github&style=flat-square">
-</a>
-<a href="https://github.com/cheshire-cat-ai/admin-vue/forks">
-  <img alt="GitHub Forks" src="https://img.shields.io/github/forks/cheshire-cat-ai/admin-vue?logo=github&style=flat-square">
-</a>
-<a href="https://github.com/cheshire-cat-ai/admin-vue/blob/main/LICENSE">
-  <img alt="GitHub License" src="https://img.shields.io/github/license/cheshire-cat-ai/admin-vue?logo=github&style=flat-square">
-</a>
-<a href="https://github.com/cheshire-cat-ai/admin-vue/issues">
-  <img alt="GitHub Issues" src="https://img.shields.io/github/issues/cheshire-cat-ai/admin-vue?logo=github&style=flat-square">
-</a>
-<a href="https://github.com/cheshire-cat-ai/admin-vue/pulls">
-  <img alt="GitHub Pull Requests" src="https://img.shields.io/github/issues-pr/cheshire-cat-ai/admin-vue?logo=github&style=flat-square">
-</a>
-
 # Cheshire Cat Admin UI 🐱
 
 This is the source code to build the admin client for the Cheshire Cat AI.
