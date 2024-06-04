@@ -216,7 +216,8 @@ const scrollToBottom = () => {
 				{{ messagesState.error }}
 			</p>
 			<div v-else-if="!messagesState.error && messagesState.loading && !messagesState.generating" class="mb-2 ml-2 flex items-center gap-2">
-				<span class="text-lg">😺</span>
+				<!-- <span class="text-lg">😺</span> -->
+				<img src="@assets/gp-logo.png" class="size-6 cursor-pointer dark:brightness-0 dark:invert md:block" />
 				<p class="flex items-center gap-2">
 					<span class="loading loading-dots loading-xs shrink-0" />
 				</p>
