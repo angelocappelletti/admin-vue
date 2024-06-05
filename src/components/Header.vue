@@ -4,7 +4,8 @@
 	<div class="navbar sticky top-0 z-30 min-h-fit bg-base-100 font-medium shadow-md md:px-[5%] lg:px-[10%]">
 		<div class="navbar-start">
 			<RouterLink to="/" class="shrink-0 !bg-transparent">
-				<img src="@assets/gp-logo.png" class="hidden size-12 cursor-pointer dark:brightness-0 dark:invert md:block" />
+				<img src="@assets/gp-logo.png" class="hidden size-12 cursor-pointer dark:brightness-0 dark:invert md:block lg:hidden" />
+				<img src="@assets/goproject_new.svg" class="hidden cursor-pointer dark:brightness-0 dark:invert lg:block header-logo" />
 			</RouterLink>
 			<Menu v-slot="{ open }" as="div" class="relative inline-block rounded-md md:hidden">
 				<MenuButton class="btn btn-circle btn-ghost" title="Menu">

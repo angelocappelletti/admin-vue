@@ -133,94 +133,96 @@ watchEffect(() => {
 		<ErrorBox v-if="pluginsState.loading || pluginsState.error" :load="pluginsState.loading" :error="pluginsState.error" />
 		<div v-else-if="filteredList.length > 0" class="flex flex-col gap-4">
 			<Pagination v-slot="{ list }" :list="filteredList" :pageSize="selectedPageSize">
-				<div v-for="item in list" :key="item.url ?? item.id" class="flex gap-2 rounded-xl bg-base-100 p-2 shadow md:gap-4 md:p-4">
-					<UseImage :src="item.thumb" class="size-20 self-center object-contain">
-						<template #error>
-							<div class="avatar placeholder self-center">
-								<div class="size-20 rounded-lg bg-gradient-to-b from-accent to-primary text-base-100">
-									<span class="text-5xl font-bold leading-3">{{ upperFirst(item.name)[0] }}</span>
+				<div v-for="item in list" :key="item.url ?? item.id">
+					<div v-if="item.name !== 'Core CCat'" class="flex gap-2 rounded-xl bg-base-100 p-2 shadow md:gap-4 md:p-4">
+						<UseImage :src="item.thumb" class="size-20 self-center object-contain">
+							<template #error>
+								<div class="avatar placeholder self-center">
+									<div class="size-20 rounded-lg bg-gradient-to-b from-accent to-primary text-base-100">
+										<span class="text-5xl font-bold leading-3">{{ upperFirst(item.name)[0] }}</span>
+									</div>
+								</div>
+							</template>
+						</UseImage>
+						<div class="flex grow flex-col">
+							<div class="flex items-center justify-between">
+								<p class="flex items-baseline gap-1 text-sm font-medium text-neutral">
+									<span class="text-xl font-bold text-neutral">{{ item.name }}</span>
+									<a
+										:href="item.plugin_url"
+										target="_blank"
+										class="link"
+										:class="{ 'pointer-events-none no-underline': item.plugin_url === '' }">
+										<span>v{{ item.version }}</span>
+										<span v-if="item.upgrade">➡ {{ item.upgrade }}</span>
+									</a>
+								</p>
+								<div class="flex gap-2">
+									<button
+										v-if="item.id !== 'core_plugin' && item.upgrade && item.plugin_url"
+										class="btn btn-primary btn-xs rounded-md uppercase"
+										@click="installRegistryPlugin(item.plugin_url)">
+										<ph-export-bold class="size-4" />
+										Upgrade
+									</button>
+									<button v-if="item.url" class="btn btn-primary btn-xs rounded-md uppercase" @click="installRegistryPlugin(item.url)">
+										<heroicons-cloud-arrow-down-solid class="size-4" />
+										Install
+									</button>
+									<button
+										v-else-if="item.id !== 'core_plugin'"
+										class="btn btn-error btn-xs rounded-md uppercase text-base-100"
+										@click="openRemoveModal(item)">
+										<heroicons-trash-solid class="size-3" />
+										Delete
+									</button>
 								</div>
 							</div>
-						</template>
-					</UseImage>
-					<div class="flex grow flex-col">
-						<div class="flex items-center justify-between">
-							<p class="flex items-baseline gap-1 text-sm font-medium text-neutral">
-								<span class="text-xl font-bold text-neutral">{{ item.name }}</span>
+							<div class="flex h-6 items-center gap-1 text-sm font-medium text-neutral">
+								<span>by</span>
 								<a
-									:href="item.plugin_url"
+									:href="item.author_url"
 									target="_blank"
 									class="link"
-									:class="{ 'pointer-events-none no-underline': item.plugin_url === '' }">
-									<span>v{{ item.version }}</span>
-									<span v-if="item.upgrade">➡ {{ item.upgrade }}</span>
+									:class="{ 'pointer-events-none no-underline': item.author_url === '' }">
+									{{ item.author_name }}
 								</a>
+							</div>
+							<p class="my-2 text-sm">
+								{{ item.description }}
 							</p>
-							<div class="flex gap-2">
-								<button
-									v-if="item.id !== 'core_plugin' && item.upgrade && item.plugin_url"
-									class="btn btn-primary btn-xs rounded-md uppercase"
-									@click="installRegistryPlugin(item.plugin_url)">
-									<ph-export-bold class="size-4" />
-									Upgrade
-								</button>
-								<button v-if="item.url" class="btn btn-primary btn-xs rounded-md uppercase" @click="installRegistryPlugin(item.url)">
-									<heroicons-cloud-arrow-down-solid class="size-4" />
-									Install
-								</button>
-								<button
-									v-else-if="item.id !== 'core_plugin'"
-									class="btn btn-error btn-xs rounded-md uppercase text-base-100"
-									@click="openRemoveModal(item)">
-									<heroicons-trash-solid class="size-3" />
-									Delete
-								</button>
-							</div>
-						</div>
-						<div class="flex h-6 items-center gap-1 text-sm font-medium text-neutral">
-							<span>by</span>
-							<a
-								:href="item.author_url"
-								target="_blank"
-								class="link"
-								:class="{ 'pointer-events-none no-underline': item.author_url === '' }">
-								{{ item.author_name }}
-							</a>
-						</div>
-						<p class="my-2 text-sm">
-							{{ item.description }}
-						</p>
-						<div class="flex h-8 items-center justify-between gap-4">
-							<div class="flex flex-wrap gap-1">
-								<div v-for="tag in item.tags.split(',')" :key="tag" class="badge rounded-lg border-neutral font-medium">
-									{{ tag.trim() }}
+							<div class="flex h-8 items-center justify-between gap-4">
+								<div class="flex flex-wrap gap-1">
+									<div v-for="tag in item.tags.split(',')" :key="tag" class="badge rounded-lg border-neutral font-medium">
+										{{ tag.trim() }}
+									</div>
 								</div>
-							</div>
-							<div class="flex flex-wrap items-center gap-2">
-								<button
-									v-if="item.id && !isEmpty(getSchema(item.id)) && item.active"
-									class="btn btn-circle btn-ghost btn-sm"
-									@click="openSettings(item)">
-									<heroicons-cog-6-tooth-20-solid class="size-5" />
-								</button>
-								<button
-									v-if="(item.hooks && item.hooks.length > 0) || (item.tools && item.tools.length > 0)"
-									class="btn btn-circle btn-ghost btn-sm"
-									@click="openInfo(item)">
-									<heroicons-information-circle-solid class="size-5" />
-								</button>
-								<input
-									v-if="item.id !== 'core_plugin' && item.id"
-									v-model="item.active"
-									type="checkbox"
-									class="!toggle !toggle-primary"
-									@click="
-										async () => {
-											// TODO: Fix this workaround used to prevent checkbox switching when an error occurs
-											const res = await togglePlugin(item.id, item.name, item.active ?? false)
-											item.active = res ? item.active : false
-										}
-									" />
+								<div class="flex flex-wrap items-center gap-2">
+									<button
+										v-if="item.id && !isEmpty(getSchema(item.id)) && item.active"
+										class="btn btn-circle btn-ghost btn-sm"
+										@click="openSettings(item)">
+										<heroicons-cog-6-tooth-20-solid class="size-5" />
+									</button>
+									<button
+										v-if="(item.hooks && item.hooks.length > 0) || (item.tools && item.tools.length > 0)"
+										class="btn btn-circle btn-ghost btn-sm"
+										@click="openInfo(item)">
+										<heroicons-information-circle-solid class="size-5" />
+									</button>
+									<input
+										v-if="item.id !== 'core_plugin' && item.id"
+										v-model="item.active"
+										type="checkbox"
+										class="!toggle !toggle-primary"
+										@click="
+											async () => {
+												// TODO: Fix this workaround used to prevent checkbox switching when an error occurs
+												const res = await togglePlugin(item.id, item.name, item.active ?? false)
+												item.active = res ? item.active : false
+											}
+										" />
+								</div>
 							</div>
 						</div>
 					</div>
