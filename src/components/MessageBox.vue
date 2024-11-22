@@ -1,42 +1,15 @@
 <script setup lang="ts">
-import hljs from 'highlight.js'
-import { Remarkable } from 'remarkable'
-import { linkify } from 'remarkable/linkify'
+import md from '@utils/markdown'
 import SidePanel from '@components/SidePanel.vue'
+import type { MessageWhy } from 'ccat-api'
 
 const whyPanel = ref<InstanceType<typeof SidePanel>>()
-
-const markdown = new Remarkable({
-	html: true,
-	breaks: true,
-	xhtmlOut: true,
-	typographer: true,
-	highlight: (str, lang) => {
-		if (lang && hljs.getLanguage(lang)) {
-			try {
-				return hljs.highlight(str, { language: lang }).value
-			} catch (_) {
-				console.log(_)
-			}
-		}
-		try {
-			return hljs.highlightAuto(str).value
-		} catch (_) {
-			console.log(_)
-		}
-		return '' // use external default escaping
-	},
-}).use(linkify)
-
-markdown.inline.ruler.enable(['sup', 'sub'])
-markdown.core.ruler.enable(['abbr'])
-markdown.block.ruler.enable(['footnote', 'deflist'])
 
 const props = defineProps<{
 	sender: 'bot' | 'user'
 	text: string
 	file?: File
-	why?: Record<string, any>
+	why?: MessageWhy
 	when: Date
 }>()
 
@@ -52,7 +25,7 @@ const maxLength = 3000
 
 const isLengthy = computed(() => text.value.length > maxLength && sender.value === 'user')
 const renderedText = computed(() => {
-	return isLengthy.value && !showReadMore.value ? markdown.render(text.value.slice(0, maxLength)) : markdown.render(text.value)
+	return isLengthy.value && !showReadMore.value ? md.render(text.value.slice(0, maxLength)) : md.render(text.value)
 })
 
 const { copy } = useClipboard({ source: text })
@@ -93,44 +66,34 @@ const fileUrl = computed(() => {
 			{{ sender === 'bot' ? 'AI' : 'Tu' }}
 			<time class="text-xs opacity-50">{{ timestamp }}</time>
 		</div>
-		<div class="chat-bubble flex min-h-fit items-center break-words rounded-lg bg-base-100 p-0 text-neutral shadow-md">
-			<div class="p-2 md:p-3">
-				<p v-if="text" class="text-ellipsis" v-html="renderedText" />
-				<p v-else class="text-ellipsis font-medium italic opacity-75">L'AI sta pensando...</p>
-				<div v-if="isLengthy && !showReadMore" class="flex justify-end font-bold">
-					<a @click="showReadMore = true">Leggi di più</a>
-				</div>
-				<div v-else-if="isLengthy && showReadMore" class="flex justify-end font-bold">
-					<a @click="showReadMore = false">Nascondi</a>
-				</div>
-				<img v-if="file?.type.startsWith('image/')" :src="fileUrl" width="512" height="512" class="rounded-lg shadow-xl" />
-				<audio
-					v-else-if="file?.type.startsWith('audio/')"
-					:src="fileUrl"
-					controls
-					:type="file.type"
-					controlslist="nodownload noplaybackrate" />
-				<video v-else-if="file?.type.startsWith('video/')" controls disablepictureinpicture controlslist="nodownload noplaybackrate">
-					<source :src="fileUrl" :type="file.type" />
-					<p>
-						Your browser doesn't support HTML video. Here is a
-						<a :href="fileUrl">link to the video</a> instead.
-					</p>
-				</video>
-				<div v-else-if="file" class="flex items-center justify-center gap-2 rounded-lg bg-base-200 p-2 shadow-xl">
-					<ph-file-fill class="size-6" />
-					<div class="flex flex-col gap-1">
-						<p class="font-bold">{{ file.name.substring(0, file.name.lastIndexOf('.')) }}</p>
-						<p class="text-xs">{{ fileTypeSize }}</p>
-					</div>
+		<div class="chat-bubble flex min-h-fit w-fit flex-col break-words rounded-lg bg-base-100 p-2 text-neutral shadow-md md:p-3">
+			<div v-if="text" class="text-ellipsis" v-html="renderedText" />
+			<p v-else class="text-ellipsis font-medium italic opacity-75">L'AI sta pensando...</p>
+			<div v-if="isLengthy" class="flex justify-end font-bold">
+				<a v-if="showReadMore" @click="showReadMore = false">Nascondi</a>
+				<a v-else @click="showReadMore = true">Leggi di più</a>
+			</div>
+			<img v-if="file?.type.startsWith('image/')" :src="fileUrl" width="512" height="512" class="rounded-lg shadow-xl" />
+			<audio
+				v-else-if="file?.type.startsWith('audio/')"
+				:src="fileUrl"
+				controls
+				:type="file.type"
+				controlslist="nodownload noplaybackrate" />
+			<video v-else-if="file?.type.startsWith('video/')" controls disablepictureinpicture controlslist="nodownload noplaybackrate">
+				<source :src="fileUrl" :type="file.type" />
+				<p>
+					Your browser doesn't support HTML video. Here is a
+					<a :href="fileUrl">link to the video</a> instead.
+				</p>
+			</video>
+			<div v-else-if="file" class="flex items-center justify-center gap-2 rounded-lg bg-base-200 p-2 shadow-xl">
+				<ph-file-fill class="size-6" />
+				<div class="flex flex-col gap-1">
+					<p class="font-bold">{{ file.name.substring(0, file.name.lastIndexOf('.')) }}</p>
+					<p class="text-xs">{{ fileTypeSize }}</p>
 				</div>
 			</div>
-			<template v-if="why">
-				<div class="divider divider-horizontal m-0 w-px before:bg-base-200 after:bg-base-200" />
-				<button class="btn btn-circle btn-xs mx-2 border-0 bg-neutral/20 text-neutral" @click="whyPanel?.togglePanel()">
-					<p class="text-base">?</p>
-				</button>
-			</template>
 		</div>
 		<div v-if="sender === 'bot'" class="chat-footer mt-1 flex gap-1">
 			<div class="tooltip tooltip-bottom" data-tip="Copy">
@@ -138,6 +101,11 @@ const fileUrl = computed(() => {
 			</div>
 			<div class="tooltip tooltip-bottom" data-tip="Regenerate">
 				<button class="btn btn-square btn-ghost btn-xs" @click="$emit('regenerate')"><heroicons-arrow-path class="size-4" /></button>
+			</div>
+			<div v-if="why" class="tooltip tooltip-bottom" data-tip="Why this response">
+				<button class="btn btn-square btn-ghost btn-xs" @click="whyPanel?.togglePanel()">
+					<ph-question-mark class="size-4" />
+				</button>
 			</div>
 		</div>
 		<SidePanel v-if="why" ref="whyPanel" title="Why this response">

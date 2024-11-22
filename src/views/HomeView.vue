@@ -9,7 +9,7 @@ const route = useRoute()
 const messagesStore = useMessages()
 const { dispatchMessage, selectRandomDefaultMessages } = messagesStore
 const { currentState: messagesState } = storeToRefs(messagesStore)
-
+const { can, cannot } = usePerms()
 const userMessage = ref(''),
 	insertedURL = ref(''),
 	isScrollable = ref(false),
@@ -33,7 +33,7 @@ const { currentState: rabbitHoleState } = storeToRefs(useRabbitHole())
 const { wipeConversation } = useMemory()
 
 const inputDisabled = computed(() => {
-	return messagesState.value.loading || !messagesState.value.ready || Boolean(messagesState.value.error)
+	return messagesState.value.loading || !messagesState.value.ready || Boolean(messagesState.value.error) || cannot('WRITE', 'CONVERSATION')
 })
 
 const randomDefaultMessages = selectRandomDefaultMessages()
@@ -105,18 +105,22 @@ const toggleListening = async () => {
  * When a new message arrives, the chat will be scrolled to bottom and the input box will be focussed.
  * If audio is enabled, a pop sound will be played.
  */
-watchDeep(
+watchThrottled(
 	messagesState,
-	() => {
-		isScrollable.value = document.documentElement.scrollHeight > document.documentElement.clientHeight
+	val => {
 		scrollToBottom()
-		textArea.value.focus()
+		if (!val.generating) textArea.value.focus()
 	},
-	{ flush: 'post' },
+	{ flush: 'post', throttle: 500, deep: true },
 )
 
 onActivated(() => {
 	textArea.value.focus()
+})
+
+useEventListener(document, 'scroll', () => {
+	const doc = document.documentElement
+	isScrollable.value = doc.scrollHeight > doc.clientHeight + doc.scrollTop
 })
 
 /**
@@ -223,7 +227,7 @@ const scrollToBottom = () => {
 				</p>
 			</div>
 		</div>
-		<div v-else class="flex grow cursor-pointer flex-col items-center justify-center gap-4 p-4">
+		<div v-else-if="can('WRITE', 'CONVERSATION')" class="flex grow cursor-pointer flex-col items-center justify-center gap-4 p-4">
 			<div
 				v-for="(msg, index) in randomDefaultMessages"
 				:key="index"
@@ -232,6 +236,7 @@ const scrollToBottom = () => {
 				{{ msg }}
 			</div>
 		</div>
+		<div v-else class="grow" />
 		<div class="fixed bottom-0 left-0 flex w-full items-center justify-center bg-gradient-to-t from-base-200 px-2 py-4">
 			<div class="flex w-full max-w-screen-xl items-center gap-2 md:gap-4">
 				<div class="dropdown dropdown-top">
@@ -299,7 +304,7 @@ const scrollToBottom = () => {
 						v-model.trim="userMessage"
 						:disabled="inputDisabled"
 						autofocus
-						:class="'textarea block max-h-20 w-full resize-none overflow-auto pr-10 !outline-2 shadow-lg !outline-offset-0'"
+						:class="'textarea block max-h-20 w-full resize-none overflow-auto bg-base-200 pr-10 !outline-2 shadow-lg !outline-offset-0 pt-[10px]'"
 						:placeholder="generatePlaceholder(messagesState.loading, isListening, messagesState.error)"
 						@keydown="preventSend" />
 					<div class="absolute right-2 top-1/2 -translate-y-1/2">
@@ -316,14 +321,14 @@ const scrollToBottom = () => {
 					class="btn btn-circle btn-primary shadow-lg"
 					:class="[isListening ? 'glass btn-outline' : '']"
 					:disabled="inputDisabled"
-					@click="toggleListening">
+					@click="toggleListening()">
 					<heroicons-microphone-solid class="size-6" />
 				</button>
 			</div>
 			<button
 				v-if="isScrollable"
 				class="btn btn-circle btn-outline btn-primary btn-sm absolute bottom-28 right-4 bg-base-100"
-				@click="scrollToBottom">
+				@click="scrollToBottom()">
 				<heroicons-arrow-down-20-solid class="size-5" />
 			</button>
 		</div>

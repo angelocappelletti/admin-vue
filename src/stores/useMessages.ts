@@ -2,12 +2,13 @@ import type { MessagesState } from '@stores/types'
 import type { BotMessage, UserMessage } from '@models/Message'
 import { uniqueId } from 'lodash'
 import { useNotifications } from '@stores/useNotifications'
-import { apiClient } from '@/api'
-import { useSettings } from '@stores/useSettings'
+import { apiClient } from '@services/ApiService'
 import MemoryService from '@services/MemoryService'
+import type { SocketResponse } from 'ccat-api'
 
 export const useMessages = defineStore('messages', () => {
 	const currentState = reactive<MessagesState>({
+		error: undefined,
 		ready: false,
 		loading: false,
 		messages: [],
@@ -36,7 +37,7 @@ export const useMessages = defineStore('messages', () => {
 		],
 	})
 
-	const { state: history } = useAsyncState(MemoryService.getConversation, [])
+	const { state: history } = useAsyncState(MemoryService.getConversation, [], { resetOnExecute: false })
 
 	watchEffect(() => {
 		history.value.forEach(({ who, message, why, when }) => {
@@ -44,27 +45,35 @@ export const useMessages = defineStore('messages', () => {
 				text: message,
 				sender: who == 'AI' ? 'bot' : 'user',
 				when: when ? new Date(when * 1000) : new Date(),
-				why,
+				why: why as SocketResponse['why'],
 			})
 		})
 		currentState.loading = false
 	})
 
-	const { isReadyAndAuth } = storeToRefs(useSettings())
 	const { showNotification } = useNotifications()
 
 	watchEffect(() => {
+		/**
+		 * Check if the websocket is open and set the ready state to true
+		 * (this is needed because apiClient initializes before the callbacks are added)
+		 */
+		if (apiClient?.socketState === WebSocket.OPEN) {
+			currentState.ready = true
+		}
+
 		/**
 		 * Subscribes to the messages service on component mount
 		 * and dispatches the received messages to the store.
 		 * It also dispatches the error to the store if an error occurs.
 		 */
-		currentState.loading = !isReadyAndAuth.value
-		currentState.ready = isReadyAndAuth.value
-
+		if (apiClient == undefined) {
+			return
+		}
 		apiClient
 			.onConnected(() => {
 				currentState.ready = true
+				currentState.error = undefined
 			})
 			.onMessage(({ content, type, why }) => {
 				switch (type) {
@@ -122,7 +131,7 @@ export const useMessages = defineStore('messages', () => {
 		/**
 		 * Unsubscribes to the messages service on component unmount
 		 */
-		apiClient.close()
+		apiClient?.close()
 	})
 
 	/**
@@ -154,7 +163,7 @@ export const useMessages = defineStore('messages', () => {
 	 */
 	const dispatchMessage = (message: string | File, store = true) => {
 		if (typeof message === 'string') {
-			apiClient.send(message)
+			apiClient?.send(message)
 			if (store)
 				addMessage({
 					text: message.trim(),

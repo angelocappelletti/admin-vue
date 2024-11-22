@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { map, omitBy, reduce, values, isEmpty, capitalize, entries, assign, remove, pull } from 'lodash'
 import { useMemory } from '@stores/useMemory'
-import { useSettings } from '@stores/useSettings'
+import { useMainStore } from '@stores/useMainStore'
 import SelectBox from '@components/SelectBox.vue'
 import { now } from 'lodash'
 import ApexChart from 'vue3-apexcharts'
@@ -11,8 +11,8 @@ import ModalBox from '@components/ModalBox.vue'
 import type { VectorsData } from 'ccat-api'
 import type { MarkerData, PlotData } from '@models/Plot'
 
-const { isDark } = storeToRefs(useSettings())
-
+const { isDark } = storeToRefs(useMainStore())
+const { cannot } = usePerms()
 const callText = ref(''),
 	callOutput = ref<VectorsData>(),
 	kMems = ref(10)
@@ -27,24 +27,10 @@ const [showSpinner, toggleSpinner] = useToggle(false)
 
 const memoryStore = useMemory()
 const { currentState: memoryState } = storeToRefs(memoryStore)
-const { wipeAllCollections, wipeCollection, callMemory, deleteMemoryPoint } = memoryStore
+const { fetchCollections, wipeAllCollections, wipeCollection, callMemory, deleteMemoryPoint } = memoryStore
 
 const { download: downloadMemories } = downloadContent('Recalled_Memories')
 const { upload: uploadFile } = uploadContent()
-
-/**
- * If "all", wipes all the collections in memory, otherwise only the selected one
- */
-const wipeMemory = async () => {
-	if (selectCollection.value) {
-		const selected = selectCollection.value.selected?.value
-		if (!selected) return
-		if (boxWipe.value?.isOpen) boxWipe.value?.closeModal()
-		if (selected === 'all') await wipeAllCollections()
-		else await wipeCollection(selected)
-		if (boxWipe.value?.isOpen) boxWipe.value?.toggleModal()
-	}
-}
 
 /**
  * Merges and reduces the matrices to a new matrix that can be plotted in a 2d graph
@@ -159,7 +145,7 @@ const selectBoxCollections = computed(() => {
 	const totalCollections = data.map(v => v.vectors_count).reduce((p, c) => p + c, 0)
 	return [
 		{ label: `All (${totalCollections})`, value: 'all' },
-		...data.map(v => ({ label: `${capitalize(v.name)} (${v.vectors_count})`, value: v.name })),
+		...data.map(v => ({ label: `${capitalize(v.name)} (${v.vectors_count ?? 0})`, value: v.name })),
 	]
 })
 
@@ -178,6 +164,22 @@ const onMarkerClick = (_e: MouseEvent, _c: object, { seriesIndex, dataPointIndex
 	pointInfoPanel.value?.togglePanel()
 }
 
+/**
+ * If "all", wipes all the collections in memory, otherwise only the selected one
+ */
+const wipeMemory = async () => {
+	if (selectCollection.value) {
+		const selected = selectCollection.value.selected?.value
+		if (!selected) return
+		if (boxWipe.value?.isOpen) boxWipe.value?.closeModal()
+		if (selected === 'all') await wipeAllCollections()
+		else await wipeCollection(selected)
+		if (boxWipe.value?.isOpen) boxWipe.value?.toggleModal()
+		await fetchCollections()
+		await recallMemory()
+	}
+}
+
 /*const dateFilter = ref(''), sourceFilter = ref('')*/
 </script>
 
@@ -190,7 +192,7 @@ const onMarkerClick = (_e: MouseEvent, _c: object, { seriesIndex, dataPointIndex
 					placeholder="Enter a text..."
 					label="Search similar memories"
 					search
-					:disabled="Boolean(memoryState.error) || memoryState.loading"
+					:disabled="Boolean(memoryState.error) || memoryState.loading || cannot('READ', 'MEMORY')"
 					@send="recallMemory()" />
 				<div class="form-control">
 					<label class="label px-0">
@@ -357,7 +359,7 @@ const onMarkerClick = (_e: MouseEvent, _c: object, { seriesIndex, dataPointIndex
 		<div class="divider !my-0" />
 		<div class="join w-fit self-center shadow-xl">
 			<button
-				:disabled="Boolean(memoryState.error) || memoryState.loading"
+				:disabled="Boolean(memoryState.error) || memoryState.loading || cannot('WRITE', 'MEMORY')"
 				class="btn btn-primary join-item hover:border-error hover:bg-error"
 				@click="boxWipe?.toggleModal()">
 				<heroicons-trash-solid class="size-4" />
@@ -404,6 +406,7 @@ const onMarkerClick = (_e: MouseEvent, _c: object, { seriesIndex, dataPointIndex
 			<button
 				v-if="clickedPoint && !['procedural', 'query'].includes(clickedPoint.collection)"
 				class="btn btn-primary btn-sm mt-auto hover:btn-error"
+				:disabled="cannot('DELETE', 'MEMORY')"
 				@click="deleteMemoryMarker(clickedPoint.collection, clickedPoint.id)">
 				<heroicons-trash-solid class="size-4" />
 				Delete memory point

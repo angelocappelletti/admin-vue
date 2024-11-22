@@ -12,12 +12,11 @@ describe('MessageBox', () => {
 			},
 		})
 
-		// expect(wrapper.find('.chat-image').text()).toContain('🙂')
-		expect(wrapper.find('.chat-image img').exists()).toBe(true)
+		expect(wrapper.find('.chat-image').text()).toContain('🙂')
 
 		expect(wrapper.find('.chat-bubble p').html()).toContain('<p>Hello dear cat!</p>')
 
-		expect(wrapper.find('.chat-bubble button').exists()).toBe(false)
+		expect(wrapper.find('.chat-footer button').exists()).toBe(false)
 
 		expect(wrapper.findComponent({ name: 'SidePanel' }).exists()).toBe(false)
 	})
@@ -27,16 +26,19 @@ describe('MessageBox', () => {
 				sender: 'bot',
 				text: 'Hello dear human!',
 				when: new Date(),
-				why: {},
+				why: {
+					input: 'Hello dear human!',
+					intermediate_steps: [],
+					memory: {},
+				},
 			},
 		})
 
-		// expect(wrapper.find('.chat-image').text()).toContain('😺')
-		expect(wrapper.find('.chat-image img').exists()).toBe(true)
+		expect(wrapper.find('.chat-image').text()).toContain('😺')
 
 		expect(wrapper.find('.chat-bubble p').html()).toContain('<p>Hello dear human!</p>')
 
-		expect(wrapper.find('.chat-bubble button').exists()).toBe(true)
+		expect(wrapper.find('.chat-footer button').exists()).toBe(true)
 
 		expect(wrapper.findComponent({ name: 'SidePanel' }).exists()).toBe(true)
 	})
